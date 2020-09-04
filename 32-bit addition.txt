@@ -1,0 +1,88 @@
+// Design of 8-bit carry look ahead adder using Verilog Data Flow Modelling
+
+module cla_4(A, B, cin, sum, Co);
+  input [3:0] A, B;
+  input cin;
+  output [3:0] sum;
+  output [3:0] Co;
+  
+  wire[3:0] p,g,C;
+  
+  assign  p = A ^ B;
+  assign  g = A & B;
+  assign  sum = p ^ cin;
+  assign  C = cin & p;
+  assign  Co = g | C;
+  
+endmodule
+
+module cla_8(A1, B1, sum1, Cin, Cout,);
+  input [7:0] A1; 
+  input [7:0] B1;
+  input Cin;
+  output [7:0] sum1;
+  output Cout;
+  wire [7:0] sum1;
+  wire carry, Cout;
+cla_4 block1(.A(A1[3:0]), .B(B1[3:0]), .cin(Cin), .sum(sum1[3:0]), .Co(carry));
+cla_4 block2(.A(A1[7:4]), .B(B1[7:4]), .cin(carry), .sum(sum1[7:4]), .Co(Cout));
+
+endmodule 
+
+// Testbench code for the addition of 32-bit numbers Using 8-bit Carry Look ahead adder
+
+module CLA_TB();
+  reg [31:0] test_A;
+  reg [7:0] a,b,c,d;
+  assign a = test_A[7:0];
+  assign b = test_A[15:8];
+  assign c = test_A[23:16];
+  assign d = test_A[31:24];    
+  
+  reg [31:0] test_B;
+  reg [7:0] x,y,w,z;
+  assign  x = test_B[7:0];
+  assign y = test_B[15:8] ;         
+  assign w = test_B[23:16] ;
+  assign z = test_B[31:24] ;
+        
+
+  reg test_Cin;
+  
+  wire [31:0] test_sum;
+  wire [7:0]   s1;
+  wire [15:8]  s2;
+  wire [23:16] s3;
+  wire [31:24] s4;
+ 
+  
+  wire test_Cout; 
+  wire test_Cout1;
+  wire test_Cout2;
+  wire test_Cout3;
+  
+  cla_8 cal_inst(.A1(a), .B1(x), .Cin(test_Cin),.Cout(test_Cout1), .sum1(s1));
+  
+  cla_8 cal_inst1(.A1(b), .B1(y), .Cin(test_Cout1), .Cout(test_Cout2), .sum1(s2));
+  
+  cla_8 cal_inst2(.A1(c), .B1(w), .Cin(test_Cout2), .Cout(test_Cout3), .sum1(s3));
+  
+  cla_8 cal_inst3(.A1(d), .B1(z), .Cin(test_Cout3), .Cout(test_Cout), .sum1(s4));
+  
+  assign test_sum = {s1,s2,s3,s4};
+  
+  initial
+    begin
+      
+      test_A[31:0] = 32'h58CB2682; test_B[31:0] = 32'h394E7A25; test_Cin = 1'b0;
+   
+    end
+  initial 
+    begin
+      $monitor($time, "A:%b, B:%b,cin:%b, Co:%b, sum:%b", test_A, test_B, test_Cin, test_Cout, test_sum);
+      
+      $dumpfile("cla_8.vcd");
+      $dumpvars;
+      $finish;
+    end
+endmodule
